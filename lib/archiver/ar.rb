@@ -23,7 +23,7 @@ module Archiver
       return nil if @source.nil?
       @source.call.tap do |io|
         io.binmode
-        raise ParseError unless io.read(8) == "!<arch>\n"
+        raise InvalidFormat unless io.read(8) == "!<arch>\n"
         while (header = next_header(io))
           @files.push( header.tap{header[:raw] = io.read(header[:bytes])} )
         end
@@ -55,15 +55,15 @@ module Archiver
     def write_to(io)
       io.write("!<arch>\n")
       @files.each do |file|
-        if file[:name] > 16
+        if file[:name] <= 16
+          io.write(sprintf("%-16s%-12lu%-6d%-6d%-8d%-10lu`\n", *[:name, :mtime, :owner, :group, :mode, :bytes].map{|k| file[k]}))
+        else
           io.write(sprintf("%-16s","#1/#{file[:name].length}"))
           io.write(sprintf("%-12lu%-6d%-6d%-8d%-10lu`\n", *[:mtime, :owner, :group, :mode, :bytes].map{|k| file[k]}))
           io.write(file[:name])
-          io.write(file[:raw])
-        else
-          io.write(sprintf("%-16s%-12lu%-6d%-6d%-8d%-10lu`\n", *[:name, :mtime, :owner, :group, :mode, :bytes].map{|k| file[k]}))
-          io.write(file[:raw])
         end
+          io.write(file[:raw])
+          io.write("\n") if io.pos % 2 == 1
       end
       io.close
       self
@@ -71,6 +71,7 @@ module Archiver
 
     def next_header(io)
       return nil if io.eof?
+      io.read(1) if io.pos % 2 == 1
       header = {}
       header[:name]  = io.read(16) || (return nil)
       header[:name].strip!
@@ -81,7 +82,7 @@ module Archiver
       header[:mode]  = io.read(8).to_i(8)
       header[:bytes] = io.read(10).to_i
       header[:magic] = io.read(2)
-      #raise ParseError unless header[:magic] == "`\n"
+      raise InvalidFormat unless header[:magic] == "`\n"
       if header[:name][0..2] == "#1/"
         # bsd format extended file name
         header[:name] = io.read(header[:name][3..-1].to_i)

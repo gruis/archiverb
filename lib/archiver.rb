@@ -1,4 +1,4 @@
 module Archiver
   module Error; end
-  class ParseError; include Error; end
+  class InvalidFormat; include Error; end
 end
