@@ -1,7 +1,7 @@
-require File.expand_path("../lib/ar/version", __FILE__)
+require File.expand_path("../lib/archiver/version", __FILE__)
 require "rubygems"
 ::Gem::Specification.new do |s|
-  s.name                      = "em-ssh"
+  s.name                      = "ruby-archiver"
   s.version                   = Archiver::VERSION
   s.platform                  = ::Gem::Platform::RUBY
   s.authors                   = ['Caleb Crane']

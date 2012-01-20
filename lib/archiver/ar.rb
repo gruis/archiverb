@@ -1,5 +1,4 @@
-require "stringio"
-require "archiver"
+require 'archiver'
 
 class Archiver
   class Ar < Archiver

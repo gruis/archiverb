@@ -12,6 +12,7 @@ class Archiver
   module Error; end
   class StandarError < ::StandardError; include Error; end
   class InvalidFormat < StandardError; end
+  class WrongChksum < StandardError; end
   class AbstractMethod < StandardError; end
 
   include Enumerable
@@ -105,25 +106,25 @@ private
   # Write all files in the archive, in the archive format, to the given IO
   # @return [Hash] must have :name, :mtime, :uid, :gid, and mode
   def write_io(io)
-    raise NotImplementedError
+    raise AbstractMethod
   end
 
   # Abstract method
   # Get the next header for the next file
   def next_header(io)
-    raise NotImplementedError
+    raise AbstractMethod
   end
 
   # Abstract method
-  # Perform any preprocessing and validation on the archive
+  # Perform any preprocessing and validation on the archive.
+  # Inheriting classes aren't requried to implement this method.
   def preprocess(io)
-    raise NotImplementedError
   end
 
   # Abstract method
   # Given a file header and an IO that is the archive retrieve the file.
   def read_file(header, io)
-    raise NotImplementedError
+    raise AbstractMethod
   end
 
 end # class::Archiver

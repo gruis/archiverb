@@ -17,10 +17,10 @@ class Archiver
 
     # the raw io object, you can add to it prior to calling read
     attr_reader :io
+    # an OpenStruct or any object that responds to uid, gid, mode, mtime and size.
     attr_reader :stat
 
     def initialize(name, io, stat = io.stat)
-      #stat   = io.stat if stat.nil? && io.respond_to?(:stat)
       @name  = ::File.basename(name)
       @dir   = ::File.dirname(name)
       @path  = name
