@@ -12,39 +12,66 @@ module Archiver
       else
         @out = path_or_io
       end
-      @files = []
+      @files = {}
     end
 
     def files
       @files.to_enum
     end
 
+    def [](file)
+      @files[file]
+    end
+
+    def names
+      @files.keys
+    end
+
+    def count
+      @files.keys.length
+    end
+
     def read
       return nil if @source.nil?
       @source.call.tap do |io|
         io.binmode
-        raise InvalidFormat unless io.read(8) == "!<arch>\n"
+        preprocess(io)
         while (header = next_header(io))
-          @files.push( header.tap{header[:raw] = io.read(header[:bytes])} )
+          @files[header[:name]] = header.tap{ header[:raw] = read_file(header, io) }
         end
       end
       self
     end
 
     def add_file(name, opts = {}, &blk)
-      blk = lambda { IO.read(name) } unless block_given?
-      @files.push( opts.merge({:raw => blk.call, :mode => 0660, :owner => Process.uid, :group => Process.gid}) )
+      if block_given?
+        raw  = blk.call
+        stat = Struct.new(:mode, :mtime, :uid, :gid).new(0660, Time.new, Process.uid, Process.gid)
+      elsif name.is_a?(String)
+        f    = File.open(name, "r")
+        f.binmode
+        stat = f.stat
+        raw  = f.read
+        f.close
+      else
+        raw  = name.read
+        stat = name.stat
+      end
+      file                = {:name => name, :raw => raw, :mode => stat.mode, :mtime => stat.mtime, :uid => stat.uid, :gid => stat.gid}.merge(opts)
+      file[:bytes]        = file[:raw].length
+      # Ar doesn't appear to record the name with its path
+      file[:name]         = File.basename(file[:name])
+      @files[file[:name]] = file
       self
     end
 
     def write(path = @out, &blk)
-      return nil unless @raw
       if block_given?
-        yield(write_to(StringIO.new))
-      elsif path.is_a?(IO)
-        write_to(path)
-      else
+        yield StringIO.new.tap { |io| write_to(io) }.string
+      elsif path.is_a?(String)
         File.open(path, "w") { |io| write_to(io) }
+      else
+        write_to(path)
       end
       self
     end
@@ -54,19 +81,25 @@ module Archiver
 
     def write_to(io)
       io.write("!<arch>\n")
-      @files.each do |file|
-        if file[:name] <= 16
-          io.write(sprintf("%-16s%-12lu%-6d%-6d%-8d%-10lu`\n", *[:name, :mtime, :owner, :group, :mode, :bytes].map{|k| file[k]}))
-        else
-          io.write(sprintf("%-16s","#1/#{file[:name].length}"))
-          io.write(sprintf("%-12lu%-6d%-6d%-8d%-10lu`\n", *[:mtime, :owner, :group, :mode, :bytes].map{|k| file[k]}))
-          io.write(file[:name])
+      @files.each do |_, file|
+        normal         = file.clone
+        normal[:mtime] = normal[:mtime].to_i
+        if file[:name].length > 16
+          normal[:name]   = "#1/#{file[:name].length + 3}"
+          normal[:raw]    = "#{file[:name]}\0\0\0" + file[:raw]
+          normal[:bytes] += file[:name].length + 3
         end
-          io.write(file[:raw])
-          io.write("\n") if io.pos % 2 == 1
+
+        io.write(sprintf("%-16s%-12u%-6d%-6d%-8o%-10u`\n", *[:name, :mtime, :uid, :gid, :mode, :bytes].map{|k| normal[k]}))
+        io.write(normal[:raw])
+        io.write("\n") if io.pos % 2 == 1
       end
       io.close
       self
+    end
+
+    def read_file(header, io)
+      io.read(header[:bytes])
     end
 
     def next_header(io)
@@ -86,11 +119,15 @@ module Archiver
       if header[:name][0..2] == "#1/"
         # bsd format extended file name
         header[:name] = io.read(header[:name][3..-1].to_i)
-
+        header[:bytes] -= header[:name].length
+        header[:name] = header[:name][0..-4]
         # @todo support gnu format for extended file name
       end
       header
     end # next_header(io)
 
+    def preprocess(io)
+      raise InvalidFormat unless io.read(8) == "!<arch>\n"
+    end # preprocess(io)
   end # class::Ar
 end # module::Archiver
