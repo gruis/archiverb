@@ -1,7 +1,7 @@
 $: << File.expand_path("../../lib/", __FILE__)
 require "digest/md5"
 
-module Archiver
+class Archiver
   module Test
     extend self
 
@@ -15,21 +15,21 @@ module Archiver
     end
 
     def data_dir
-      @data_dir ||= File.expand_path("../data/", __FILE__)
+      @data_dir ||= ::File.expand_path("../data/", __FILE__)
     end
   end # module::Test
-end # module::Archiver
+end # class::Archiver
 
 RSpec::Matchers.define :unar_as do |original|
   match do |unared|
-    unared.is_a?(Hash) && !unared[:raw].nil? && Digest::MD5.hexdigest(unared[:raw]) == Archiver::Test.md5s[original]
+    !unared.nil? && !unared.read.nil? && Digest::MD5.hexdigest(unared.read) == Archiver::Test.md5s[original]
   end # unared
 
   failure_message_for_should do |unared|
-    "expected #{unared[:name]} (#{Digest::MD5.hexdigest(unared[:raw])}) to be the same as the #{original} (#{Archiver::Test.md5s[original]})."
+    "expected #{unared.name} (#{Digest::MD5.hexdigest(unared.read)}) to be the same as the #{original} (#{Archiver::Test.md5s[original]})."
   end # unared
 
   failure_message_for_should_not do |unared|
-    "expected #{unared[:name]} (#{Digest::MD5.hexdigest(unared[:raw])}) to be the different from #{original} (#{Archiver::Test.md5s[original]})."
+    "expected #{unared.name} (#{Digest::MD5.hexdigest(unared.read)}) to be the different from #{original} (#{Archiver::Test.md5s[original]})."
   end # unared
 end # original
