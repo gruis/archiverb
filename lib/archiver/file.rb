@@ -20,7 +20,7 @@ class Archiver
     # an OpenStruct or any object that responds to uid, gid, mode, mtime and size.
     attr_reader :stat
 
-    def initialize(name, io, stat = io.stat, buff = io, &blk)
+    def initialize(name, io, stat=(io.respond_to?(:lstat) ? io.lstat : io.stat), buff=io, &blk)
       @name  = ::File.basename(name)
       @dir   = ::File.dirname(name)
       @path  = name
@@ -44,7 +44,7 @@ class Archiver
         @readback.call(@readbuff)
         @readbuff.close_write
       end
-      @io.rewind if @io.respond_to?(:stat) && !@io.stat.pipe?
+      @io.rewind unless @stat.pipe?
       @raw    = @io.read
       @bytes  = @raw.length
       @io.close
