@@ -14,10 +14,10 @@ class Archiver
         if normal[:name].length > 16
           normal[:name]   = "#1/#{file.name.length + 3}"
           normal[:raw]    = "#{file.name}\0\0\0" + normal[:raw]
-          normal[:bytes]  = file.name.length + 3
+          normal[:size]  = file.name.length + 3
         end
-        normal[:bytes]  = normal[:raw].length
-        printf(io, "%-16s%-12u%-6d%-6d%-8o%-10u`\n", *[:name, :mtime, :uid, :gid, :mode, :bytes].map{|k| normal[k]})
+        normal[:size]  = normal[:raw].length
+        printf(io, "%-16s%-12u%-6d%-6d%-8o%-10u`\n", *[:name, :mtime, :uid, :gid, :mode, :size].map{|k| normal[k]})
         io.write(normal[:raw])
         io.write("\n") if io.pos % 2 == 1
       end
@@ -35,13 +35,13 @@ class Archiver
       header[:uid] = io.read(6).to_i
       header[:gid] = io.read(6).to_i
       header[:mode]  = io.read(8).to_i(8)
-      header[:bytes] = io.read(10).to_i
+      header[:size] = io.read(10).to_i
       header[:magic] = io.read(2)
       raise InvalidFormat unless header[:magic] == "`\n"
       if header[:name][0..2] == "#1/"
         # bsd format extended file name
         header[:name] = io.read(header[:name][3..-1].to_i)
-        header[:bytes] -= header[:name].length
+        header[:size] -= header[:name].length
         header[:name] = header[:name][0..-4]
         # @todo support gnu format for extended file name
       end
@@ -53,7 +53,7 @@ class Archiver
     end
 
     def read_file(header, io)
-      io.read(header[:bytes])
+      io.read(header[:size])
     end
 
   end # class::Ar

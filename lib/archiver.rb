@@ -73,11 +73,17 @@ class Archiver
     if block_given?
       r, w = IO.pipe
       @files[name] = File.new(name, r, r.stat, w, &blk)
-    elsif name.is_a?(String)
+      return self
+    end
+
+    case name
+    when String
       @files[name] = File.new(name, ::File.open(name, "r+"))
+    when ::File
+      @files[name.path] = File.new(name.path, name, stat_struct(name, opts))
     else
       opts[:name] = name.respond_to?(:path) ? name.path : name.__id__.to_s if opts[:name].nil?
-      @files[opts[:name]] = File.new(opts[:name], name)
+      @files[opts[:name]] = File.new(opts[:name], name, stat_struct(name, opts))
     end
     self
   end
@@ -121,4 +127,19 @@ private
     raise AbstractMethod
   end
 
+  def stat_struct(io, start = {})
+    return OpenStruct.new(start) if (statm = [:lstat, :stat].find{|m| io.respond_to?(m)}).nil?
+    stat = io.send(statm)
+    reqd = [ :dev    , :dev_major , :dev_minor  , :ino        , :mode  , :nlink   ,
+             :gid    , :uid       , :rdev_major , :rdev_minor , :size  , :blksize ,
+             :blocks , :atime     , :mtime      , :ctime      , :ftype , :pipe?   ,
+             :rdev   , :symlink?
+           ]
+    hash = reqd.inject({})  do |h , meth|
+      h[meth] = stat.respond_to?(meth) ? stat.send(meth) : false
+      h
+    end
+    hash[:readlink] = ::File.readlink(io) if hash[:symlink?]
+    return OpenStruct.new(hash.merge(start))
+  end # stat_to_hash(stat)
 end # class::Archiver

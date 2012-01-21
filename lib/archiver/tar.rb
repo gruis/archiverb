@@ -41,15 +41,17 @@ class Archiver
       header[:mtime]    = raw[136..147].strip
       header[:mtime]    = "0#{header[:mtime]}" if header[:mtime].length == 11
       header[:mtime]    = Time.at(Integer(header[:mtime]))
-      header[:typeflag] = raw[156]
-      header[:linkname] = raw[157..256].strip
-      header[:magic]    = raw[257..262].strip
-      header[:version]  = raw[263..264].strip
-      header[:uname]    = raw[265..296].strip
-      header[:gname]    = raw[297..328].strip
-      header[:devmajor] = raw[329..336].strip
-      header[:devminor] = raw[337..344].strip
-      header[:prefix]   = raw[345..500].strip
+      # @todo convert this type to ftype
+      # @todo use readlink, symlink?, etc.,.
+      header[:ftype]     = raw[156]
+      header[:linkname]  = raw[157..256].strip
+      header[:magic]     = raw[257..262].strip
+      header[:version]   = raw[263..264].strip
+      header[:uname]     = raw[265..296].strip
+      header[:gname]     = raw[297..328].strip
+      header[:dev_major] = raw[329..336].strip
+      header[:dev_minor] = raw[337..344].strip
+      header[:prefix]    = raw[345..500].strip
       header.merge!(pull_ustar(raw)) if header[:magic] == "ustar"
       header
     end
