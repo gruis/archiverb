@@ -14,13 +14,16 @@ class Archiver
     attr_reader :uid, :gid
     # @return [Time] modification time
     attr_reader :mtime
-
     # the raw io object, you can add to it prior to calling read
     attr_reader :io
-    # an OpenStruct or any object that responds to uid, gid, mode, mtime and size.
+    # [Archiver::Stat]
     attr_reader :stat
 
-    def initialize(name, io, stat=(io.respond_to?(:lstat) ? io.lstat : io.stat), buff=io, &blk)
+    # def initialize(name, io, stat=(io.respond_to?(:lstat) ? io.lstat : io.stat), buff=io, &blk)
+    def initialize(name, io, buff=io, stat=nil, &blk)
+      buff,stat = stat, buff if buff.is_a?(Stat) || buff.is_a?(::File::Stat)
+      stat = Stat.new(io) if stat.nil?
+
       @name  = ::File.basename(name)
       @dir   = ::File.dirname(name)
       @path  = name

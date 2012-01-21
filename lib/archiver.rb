@@ -1,4 +1,4 @@
-require "ostruct"
+require "archiver/stat"
 require "archiver/file"
 
 # Provides a common interface for working with different types of
@@ -7,7 +7,6 @@ require "archiver/file"
 # @example
 #   arc = Archiver::Ar.new("junk.ar", "a.txt", "b.txt", "c.txt")
 #   arc.write("/tmp/junk.ar")  # => creates /tmp/junk.ar with {a,b,c}.txt
-#
 class Archiver
   module Error; end
   class StandarError < ::StandardError; include Error; end
@@ -43,9 +42,11 @@ class Archiver
     @files[file]
   end
 
+  # Iterate over each file.
+  # @yield { |name, file| }
   def each(&blk)
     @files.each(&blk)
-  end # each(&blk)
+  end
 
   def names
     @files.keys
@@ -55,13 +56,15 @@ class Archiver
     @files.keys.length
   end
 
+  # Pulls each file out of the archive and places them in #files.
+  # @todo take a block and yield each file as it's read without storing it in #files
   def read
     return self if @source.nil?
     io = @source.call
     io.binmode
     preprocess(io)
     while (header = next_header(io))
-      @files[header[:name]] = File.new(header[:name], read_file(header, io), OpenStruct.new(header))
+      @files[header[:name]] = File.new(header[:name], read_file(header, io), Stat.new(header))
     end
     io.close
     self
@@ -71,19 +74,17 @@ class Archiver
   # @param [String, File, IO]
   def add(name, opts = {}, &blk)
     if block_given?
-      r, w = IO.pipe
-      @files[name] = File.new(name, r, r.stat, w, &blk)
+      @files[name] = File.new(name, *IO.pipe, &blk)
       return self
     end
-
     case name
     when String
       @files[name] = File.new(name, ::File.open(name, "r+"))
     when ::File
-      @files[name.path] = File.new(name.path, name, stat_struct(name, opts))
+      @files[name.path] = File.new(name.path, name, Stat.new(name, opts))
     else
       opts[:name] = name.respond_to?(:path) ? name.path : name.__id__.to_s if opts[:name].nil?
-      @files[opts[:name]] = File.new(opts[:name], name, stat_struct(name, opts))
+      @files[opts[:name]] = File.new(opts[:name], name, Stat.new(name, opts))
     end
     self
   end
@@ -126,20 +127,4 @@ private
   def read_file(header, io)
     raise AbstractMethod
   end
-
-  def stat_struct(io, start = {})
-    return OpenStruct.new(start) if (statm = [:lstat, :stat].find{|m| io.respond_to?(m)}).nil?
-    stat = io.send(statm)
-    reqd = [ :dev    , :dev_major , :dev_minor  , :ino        , :mode  , :nlink   ,
-             :gid    , :uid       , :rdev_major , :rdev_minor , :size  , :blksize ,
-             :blocks , :atime     , :mtime      , :ctime      , :ftype , :pipe?   ,
-             :rdev   , :symlink?
-           ]
-    hash = reqd.inject({})  do |h , meth|
-      h[meth] = stat.respond_to?(meth) ? stat.send(meth) : false
-      h
-    end
-    hash[:readlink] = ::File.readlink(io) if hash[:symlink?]
-    return OpenStruct.new(hash.merge(start))
-  end # stat_to_hash(stat)
 end # class::Archiver
