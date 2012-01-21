@@ -20,21 +20,14 @@ class Archiver
   def initialize(path_or_io = nil, *files, &blk)
     raise NotImplementedError if self.class == Archiver
     @opts = files.last.is_a?(Hash) ? files.pop : {}
-    files.each do |file|
-      case file
-      when String
-        @files[file] = File.new(file, (io = File.new(file, "r")), io.stat)
-      when ::File
-        @files[file.path] = File.new(file.path, file, file.stat)
-      when IO
-        @files[file.__id__] = File.new(file.__id__, file, file.stat)
-      else
-        raise ArgumentError.new("can't use #{file} as an input")
-      end
-    end # file
-
+    files.each { |file|  add(file) }
     if block_given?
-      @source = lambda { StringIO.new(blk.call) }
+      r, w = IO.pipe
+      @source = lambda do
+        blk.call(w)
+        w.close unless w.closed?
+        r
+      end
     else
       @source = lambda { path_or_io.is_a?(IO) ? path_or_io : ::File.new(path_or_io, "r") }
     end
@@ -64,33 +57,34 @@ class Archiver
 
   def read
     return self if @source.nil?
-    @source.call.tap do |io|
-      io.binmode
-      preprocess(io)
-      while (header = next_header(io))
-        @files[header[:name]] = File.new(header[:name], read_file(header, io), OpenStruct.new(header))
-      end
+    io = @source.call
+    io.binmode
+    preprocess(io)
+    while (header = next_header(io))
+      @files[header[:name]] = File.new(header[:name], read_file(header, io), OpenStruct.new(header))
     end
+    io.close
     self
   end
 
+  # Add a file to the archive.
+  # @param [String, File, IO]
   def add(name, opts = {}, &blk)
     if block_given?
-      io   = blk.call
-      stat = Struct.new(:mode, :mtime, :uid, :gid).new(0660, Time.new, Process.uid, Process.gid)
+      r, w = IO.pipe
+      @files[name] = File.new(name, r, r.stat, w, &blk)
     elsif name.is_a?(String)
-      io   = ::File.open(name, "r")
-      stat = io.stat
+      @files[name] = File.new(name, ::File.open(name, "r+"))
     else
-      io   = name
-      stat = name.stat
+      opts[:name] = name.respond_to?(:path) ? name.path : name.__id__.to_s if opts[:name].nil?
+      @files[opts[:name]] = File.new(opts[:name], name)
     end
-    @files[name] = File.new(name, io, OpenStruct.new({:name => name, :mode => stat.mode, :mtime => stat.mtime, :uid => stat.uid, :gid => stat.gid}.merge(opts)))
     self
   end
 
   def write(path = @out, &blk)
     if block_given?
+      # use a pipe instead?
       yield StringIO.new.tap { |io| write_to(io) }.string
     elsif path.is_a?(String)
       ::File.open(path, "w") { |io| write_to(io) }

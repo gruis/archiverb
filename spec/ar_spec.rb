@@ -4,10 +4,6 @@ require "archiver/ar"
 
 describe Archiver::Ar do
   include Archiver::Test
-  describe "initialize behavior" do
-    pending "the interface for read is okay; create is not finalized"
-  end # initialize behavior
-
   it "should correctly unarchive text data" do
     ar = nil
     ar = Archiver::Ar.new(::File.join(data_dir, 'txt.ar')).read
@@ -30,14 +26,13 @@ describe Archiver::Ar do
 
   it "should correctly ar text data" do
     Archiver::Ar.new.tap do |archive|
-      ['heneryIV-westmoreland.txt', 'heneryIV.txt'].each do |file|
-        archive.add(::File.expand_path("../data/#{file}", __FILE__))
-      end # file
+      archive.add(::File.expand_path("../data/heneryIV-westmoreland.txt", __FILE__))
+      archive.add(::File.expand_path("../data/heneryIV.txt", __FILE__))
       archive.count.should == 2
       archive.files.should_not be_empty
       archive.files.map(&:name).should == ['heneryIV-westmoreland.txt', 'heneryIV.txt']
       archive.write do |raw|
-        Digest::MD5.hexdigest(raw).should == "cb3902b354d78b17cd46ba5d7f263c4a"
+        Digest::MD5.hexdigest(raw).should == "428500d94224b52844b0499af60da8d4"
       end # raw
     end # archive
   end # should correctly ar text data
