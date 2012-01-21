@@ -52,4 +52,12 @@ describe Archiver::Ar do
     end # archive
   end # should correctly ar binary data
 
+  it "should correctly duplicate an ar file" do
+    contents = IO.read(::File.join(data_dir, 'txt.ar'))
+    archive  = Archiver::Ar.new(::File.join(data_dir, 'txt.ar')).read
+    archive.write do |raw|
+      raw.should == contents
+    end # raw
+  end # should correctly duplicate an ar file
+
 end # Archiver::Ar
