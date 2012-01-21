@@ -8,34 +8,52 @@ describe Archiver do
   describe "#new" do
     it "should support reading from the filesystem" do
       pending
-    end # should support reading from the filesystem
+    end
     it "should support reading from an open File" do
       pending
-    end # should support reading from an open File
+    end
     it "should support reading from a pipe" do
       pending
-    end # should support reading from a pipe
+    end
     it "should support reading from a yielded pipe" do
       pending
-    end # should support reading from a yielded pipe
+    end
     it "should support reading from a StringIO" do
       pending
-    end # should support reading from a StringIO
+    end
+
+    describe "when given a list of" do
+      describe "files names" do
+        it "should create an archive of those files" do
+          pending
+        end
+      end
+      describe "Files" do
+        it "should create an archive of those Files" do
+          pending
+        end
+      end
+      describe "Files and file names" do
+        it "should create an archive of those Files" do
+          pending
+        end
+      end
+    end # when given a list of
   end # #new
 
   describe "#write" do
     it "should support yielding contents to a block" do
       pending
-    end # should support yielding contents to a block
+    end
     it "should support writing to a pipe" do
       pending
-    end # should support writing to a pipe
+    end
     it "should support writing to a File object" do
       pending
-    end # should support writing to a File object
+    end
     it "should support writing to the file system" do
       pending
-    end # should support writing to the file system
+    end
   end # #write
 
   describe "#add" do
