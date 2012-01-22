@@ -10,6 +10,7 @@ require "archiver/file"
 class Archiver
   module Error; end
   class StandarError < ::StandardError; include Error; end
+  class ArgumentError < ::ArgumentError; include Error; end
   class InvalidFormat < StandardError; end
   class WrongChksum < StandardError; end
   class AbstractMethod < StandardError; end

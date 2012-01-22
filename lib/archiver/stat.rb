@@ -18,6 +18,12 @@ class Archiver
       return super(hash.merge(start))
     end
 
+    # ASCII representation of the owner and group of the file respectively.
+    # In TAR, if found, the user and group IDs are used rather than the values
+    # in the uid and gid fields.
+    attr_accessor :uname, :gname
+
+
   private
 
     def stat_hash(stat)

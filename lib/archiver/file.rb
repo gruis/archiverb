@@ -10,16 +10,20 @@ class Archiver
     attr_reader :path
     # octal mode
     attr_accessor :mode
-    # @return [Fixnum]
+    # The user id and group id of the file. Set #stat.uname and #stat.gname
+    # to force ownership by name rather than id.
     attr_reader :uid, :gid
     # @return [Time] modification time
     attr_reader :mtime
+
+    attr_reader :size
+    alias :bytes :size
+
     # the raw io object, you can add to it prior to calling read
     attr_reader :io
     # [Archiver::Stat]
     attr_reader :stat
 
-    # def initialize(name, io, stat=(io.respond_to?(:lstat) ? io.lstat : io.stat), buff=io, &blk)
     def initialize(name, io, buff=io, stat=nil, &blk)
       buff,stat = stat, buff if buff.is_a?(Stat) || buff.is_a?(::File::Stat)
       stat = Stat.new(io) if stat.nil?
@@ -31,7 +35,7 @@ class Archiver
       @uid   = stat.uid
       @gid   = stat.gid
       @mode  = stat.mode
-      @bytes = stat.size
+      @size = stat.size
 
       @readbuff = buff
       @readback = blk unless blk.nil?
@@ -49,7 +53,7 @@ class Archiver
       end
       @io.rewind unless @stat.pipe?
       @raw    = @io.read
-      @bytes  = @raw.length
+      @size  = @raw.length
       @io.close
       @raw
     end # read
