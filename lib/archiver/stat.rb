@@ -37,7 +37,9 @@ class Archiver
       when :uid
         Process.euid
       when :mode
-        16877
+        0644
+      when :ftype
+        "file"
       else
         false
       end

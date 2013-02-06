@@ -34,7 +34,7 @@ class Archiver
         # output header: data/henryIV.txt0050423000076500000240000000001411706305252015333 2heneryIV.txtustar  calebstaff
 
         # offset 100
-        header += sprintf("%.7o\0", file.mode.to_s(8)[1..-1])
+        header += sprintf("%.7o\0", file.mode)
         # offset 108
         header += sprintf("%.7o\0", file.uid)
         # offset 116
@@ -79,7 +79,7 @@ class Archiver
 
         # TODO support a configurable prefix field
         # offset 345
-        header += "\0" * 155
+        header += "#{prefix}" + ("\0" * (155 - (prefix || "").length))
 
         # offset 500
         header += "\0" * 12
@@ -108,7 +108,7 @@ class Archiver
       check             = chksum(raw)
       header[:chksum]   = raw[148..155]
       raise WrongChksum.new("#{header[:name]}: #{header[:chksum]} expected to be #{check}") unless header[:chksum] == check
-      header[:mode]     = Integer(raw[100..107].strip)
+      header[:mode]     = raw[100..107].to_i(8)
       header[:uid]      = Integer(raw[108..115].strip)
       header[:gid]      = Integer(raw[116..123].strip)
       header[:size]     = Integer(raw[124..135].strip)

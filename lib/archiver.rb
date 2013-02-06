@@ -17,6 +17,8 @@ class Archiver
 
   include Enumerable
 
+  attr_accessor :prefix
+
   def initialize(path_or_io = nil, *files, &blk)
     raise NotImplementedError if self.class == Archiver
     @opts = files.last.is_a?(Hash) ? files.pop : {}
@@ -29,10 +31,14 @@ class Archiver
         r
       end
     else
-      @source = lambda { path_or_io.is_a?(IO) ? path_or_io : ::File.new(path_or_io, "r") }
+      @source = lambda { path_or_io.is_a?(IO) ? path_or_io : ::File.new(path_or_io, "a+").tap{|f| f.rewind } }
     end
     @out = path_or_io
     @files = {}
+  end
+
+  def path
+    @out
   end
 
   def files
@@ -116,6 +122,7 @@ class Archiver
     elsif path.is_a?(String)
       ::File.open(path, "w") { |io| write_to(io) }
     else
+      path.truncate
       write_to(path)
     end
     self
