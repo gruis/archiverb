@@ -73,20 +73,39 @@ class Archiver
 
   # Add a file to the archive.
   # @param [String, File, IO]
-  def add(name, opts = {}, &blk)
+  # @param [Hash] opts options to pass to Stat.new
+  # @param [IO, ::File, String, StringIO] io
+  def add(name, opts = {}, io = nil, &blk)
     if block_given?
       @files[name] = File.new(name, *IO.pipe, &blk)
       return self
     end
-    case name
-    when String
-      @files[name] = File.new(name, ::File.open(name, "r+"))
-    when ::File
-      @files[name.path] = File.new(name.path, name, Stat.new(name, opts))
-    else
-      opts[:name] = name.respond_to?(:path) ? name.path : name.__id__.to_s if opts[:name].nil?
-      @files[opts[:name]] = File.new(opts[:name], name, Stat.new(name, opts))
+
+    if io
+      opts, io = io, opts if io.is_a?(Hash)
+    elsif !opts.is_a?(Hash)
+      opts, io = {}, opts
     end
+
+    if io
+      if io.is_a?(String) || io.is_a?(StringIO) || io.is_a?(IO) || io.is_a?(::File)
+        @files[name] = File.new(name, io, Stat.new(io, opts))
+      else
+        raise ArgumentError.new("unsupported data source: #{io.class}")
+      end
+    else
+      case name
+      when String
+        fio = ::File.exists?(name) ? ::File.new(name, "r") : ""
+        @files[name] = File.new(name, fio, Stat.new(fio, opts))
+      when ::File
+        @files[name.path] = File.new(name.path, name, Stat.new(name, opts))
+      else
+        opts[:name] = name.respond_to?(:path) ? name.path : name.__id__.to_s if opts[:name].nil?
+        @files[opts[:name]] = File.new(opts[:name], name, Stat.new(name, opts))
+      end
+    end
+
     self
   end
 
@@ -103,6 +122,7 @@ class Archiver
   end
 
 private
+
 
   # Abstract method
   # Write all files in the archive, in the archive format, to the given IO

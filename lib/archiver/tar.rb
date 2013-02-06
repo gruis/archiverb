@@ -5,6 +5,7 @@ class Archiver
   # GNU tar implementation
   # @see http://en.wikipedia.org/wiki/Tar_(file_format)
   # @see http://www.gnu.org/software/tar/manual/html_node/Standard.html
+  # @see http://www.subspacefield.org/~vax/tar_format.html
   class Tar < Archiver
     TMAGIC       = 'ustar'
     TVERSION     = "00"
@@ -26,35 +27,49 @@ class Archiver
 
     def write_to(io)
       @files.each do |name, file|
-        # @todo deal with file name larger than 100 bytes
+        # @todo deal with file names larger than 100 bytes
         header = "#{name}\0" + ("\0" * (99 - name.length))
         # @todo double check the modes on links
         # input header: data/henryIV.txt0000755000076500000240000000000011706250470015332 2heneryIV.txtustar  calebstaff
         # output header: data/henryIV.txt0050423000076500000240000000001411706305252015333 2heneryIV.txtustar  calebstaff
+
+        # offset 100
         header += sprintf("%.7o\0", file.mode.to_s(8)[1..-1])
+        # offset 108
         header += sprintf("%.7o\0", file.uid)
+        # offset 116
         header += sprintf("%.7o\0", file.gid)
+        # offset 124
         header += sprintf("%.11o\0", file.size)
+        # offset 136
         header += sprintf("%.11o\0", file.mtime.to_i)
+        # offset 148
         header += " " * 8 # write 8 blanks for the checksum, we'll replace it later
 
+        # offset 156
         if [LNKTYPE, SYMTYPE].include?(type = tar_type(file.stat))
           header += sprintf("%.1o", type)
           raise ArgumentError.new("#{name} link type files' stat objects must contain a readlink") if file.stat.readlink.nil?
+          # offset 157
           header += "#{file.stat.readlink}\0" + ("\0" * (99 - file.stat.readlink.length))
         else
           type = DIRTYPE if name[-1] == "/"
           header += sprintf("%.1o", type)
+          # offset 157
           header += "\0"*100
         end
 
+        # offset 257
         header += OLDGNU_MAGIC
 
         uname = file.stat.uname || Etc.getpwuid(file.uid).name
         gname = file.stat.gname || Etc.getgrgid(file.gid).name
+        # offset 265
         header += "#{uname}\0" + ("\0" * (31 - uname.length))
+        # offset 297
         header += "#{gname}\0" + ("\0" * (31 - gname.length))
 
+        # offset 329
         if type == CHRTYPE || type ==BLKTYPE
           header += sprintf("%.7o\0", file.stat.dev_major)
           header += sprintf("%.7o\0", file.stat.dev_minor)
@@ -62,10 +77,20 @@ class Archiver
           header += "\0" * 16
         end
 
+        # TODO support a configurable prefix field
+        # offset 345
         header += "\0" * 155
+
+        # offset 500
+        header += "\0" * 12
+
         header = header[0..147] + chksum(header) + header[156..-1]
         io.write(header)
-        io.write(file.read).tap {|len| io.write("\0" * (len % 512)) }
+        io.write(file.read).tap do |len|
+          unless (overflow = len % 512) == 0
+            io.write("\0" * (512 - (overflow)))
+          end
+        end
       end # name, file
 
       io.write("\0" * 1024)

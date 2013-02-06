@@ -86,6 +86,22 @@ describe Archiver do
       archive.write { |raw| raw.should include(contents) }
     end # should support adding files from a File object
 
+    it "should support adding files from a StringIO object" do
+      archive[filepath].should be_nil
+      data = StringIO.new(IO.read(filepath))
+      archive.add(filepath, data)
+      archive[filepath].should_not be_nil
+      archive.write { |raw| raw.should include(contents) }
+    end # should support adding files from a StringIO object
+
+    it "should support adding files from a String object" do
+      archive[filepath].should be_nil
+      contents = IO.read(filepath)
+      archive.add(filepath, contents)
+      archive[filepath].should_not be_nil
+      archive.write { |raw| raw.should include(contents) }
+    end # should support adding files from a String object
+
     it "should support streaming add via yielded pipe" do
       archive[filepath].should be_nil
       archive.add('henryIV.txt') { |io| io.write(contents) }

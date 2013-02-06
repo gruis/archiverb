@@ -7,11 +7,11 @@ class Archiver
                    :rdev   , :symlink?
                  ]
     def initialize(io, start = {})
-      return super(Hash[@@reqdatrs.map{|m| [m, false]}].merge(io)) if io.is_a?(Hash)
+      return super(Hash[@@reqdatrs.map{|m| [m, def_v(m)]}].merge(io)) if io.is_a?(Hash)
       return super(stat_hash(io).merge(start)) if io.is_a?(::File::Stat)
 
       statm = [:lstat, :stat].find{|m| io.respond_to?(m)}
-      return super(Hash[@@reqdatrs.map{|m| [m, false]}].merge(start)) if statm.nil?
+      return super(Hash[@@reqdatrs.map{|m| [m, def_v(m)]}].merge(stat_hash(io)).merge(start)) if statm.nil?
 
       hash = stat_hash(io.send(statm))
       hash[:readlink] = ::File.readlink(io) if hash[:symlink?]
@@ -26,9 +26,26 @@ class Archiver
 
   private
 
+    def def_v(attr)
+      case attr
+      when :atime, :ctime, :mtime
+        Time.new
+      when :size
+        0
+      when :gid
+        Process.egid
+      when :uid
+        Process.euid
+      when :mode
+        16877
+      else
+        false
+      end
+    end
+
     def stat_hash(stat)
       @@reqdatrs.inject({})  do |h , meth|
-          h[meth] = stat.respond_to?(meth) ? stat.send(meth) : false
+          h[meth] = stat.respond_to?(meth) ? stat.send(meth) : def_v(meth)
           h
       end
     end # stat_hash(stat, syms

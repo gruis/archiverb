@@ -26,8 +26,8 @@ describe Archiver::Ar do
 
   it "should correctly ar text data" do
     Archiver::Ar.new.tap do |archive|
-      archive.add(::File.expand_path("../data/heneryIV-westmoreland.txt", __FILE__))
-      archive.add(::File.expand_path("../data/heneryIV.txt", __FILE__))
+      archive.add(::File.expand_path("../data/heneryIV-westmoreland.txt", __FILE__), :mtime => 1327073962)
+      archive.add(::File.expand_path("../data/heneryIV.txt", __FILE__), :mtime => 1327110498)
       archive.count.should == 2
       archive.files.should_not be_empty
       archive.files.map(&:name).should == ['heneryIV-westmoreland.txt', 'heneryIV.txt']

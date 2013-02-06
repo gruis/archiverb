@@ -41,6 +41,9 @@ class Archiver
       @readback = blk unless blk.nil?
       @io       = io.is_a?(String) ? StringIO.new(io) : io
       @io.binmode
+      if @io.respond_to?(:path) && ::File.directory?(@io.path)
+        @size     = 0
+      end
       @stat     = stat
     end # initialize(io, stat)
 
@@ -51,9 +54,15 @@ class Archiver
         @readback.call(@readbuff)
         @readbuff.close_write
       end
+
       @io.rewind unless @stat.pipe?
-      @raw    = @io.read
-      @size  = @raw.length
+
+      if @io.respond_to?(:path) && ::File.directory?(@io.path)
+        @raw  = ""
+      else
+        @raw    = @io.read
+        @size  = @raw.length
+      end
       @io.close
       @raw
     end # read
