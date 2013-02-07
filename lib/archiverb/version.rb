@@ -1,3 +1,3 @@
 class Archiverb
-  VERSION = '0.0.0'
-end # module::Archiverb
+  VERSION = '0.9.0'
+end
