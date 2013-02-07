@@ -17,8 +17,6 @@ class Archiverb
 
   include Enumerable
 
-  attr_accessor :prefix
-
   def initialize(path_or_io = nil, *files, &blk)
     raise NotImplementedError if self.class == Archiverb
     @opts = files.last.is_a?(Hash) ? files.pop : {}

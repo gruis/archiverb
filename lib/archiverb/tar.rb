@@ -27,8 +27,15 @@ class Archiverb
 
     def write_to(io)
       @files.each do |name, file|
-        # @todo deal with file names larger than 100 bytes
-        header = "#{name}\0" + ("\0" * (99 - name.length))
+        if name.length > 100
+          name, prefix = name[0..99], name[100..-1]
+          if prefix > 155
+            raise ArgumentError.new("file name cannot exceed 255 characters: #{name}#{prefix}")
+          end
+        else
+          prefix = ""
+        end
+        header = "#{name}" + ("\0" * (100 - name.length))
         # @todo double check the modes on links
         # input header: data/henryIV.txt0000755000076500000240000000000011706250470015332 2heneryIV.txtustar  calebstaff
         # output header: data/henryIV.txt0050423000076500000240000000001411706305252015333 2heneryIV.txtustar  calebstaff
@@ -77,7 +84,6 @@ class Archiverb
           header += "\0" * 16
         end
 
-        # TODO support a configurable prefix field
         # offset 345
         header += "#{prefix}" + ("\0" * (155 - (prefix || "").length))
 
