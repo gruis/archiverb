@@ -62,3 +62,41 @@ archive.add("data/henryIV-westmoreland.txt", contents)
 
 archive.write 
 ```
+
+## Working with Gzip Files
+
+### Writing to a Gzip file
+
+To create a gzipped tar archive, populate a ``Archiverb::Tar`` object in
+memory then create a ``GzipWriter`` object and pass it to
+``Archiverb::Tar#write``.
+
+```ruby
+require "zlib"
+
+path    = File.expand_path("../henryIV.tar", __FILE__)
+
+archive = Archiverb::Tar.new
+archive.add("data/henryIV.txt", 
+            IO.read((File.expand_path("../spec/data/heneryIV.txt", __FILE__))))
+archive.add("data/henryIV-westmoreland.txt", 
+            IO.read((File.expand_path("../spec/data/heneryIV-westmoreland.txt", __FILE__))))
+
+Zlib::GzipWriter.open(path) do |gz|
+  archive.write(gz)
+end
+```
+
+
+### Reading from a Gzip file
+
+```ruby
+require "zlib"
+
+File.open(File.expand_path("../henryIV.tgz", __FILE__)) do |f|
+  gz      = Zlib::GzipReader.new(f)
+  archive = Archiverb::Tar.new(gz)
+  archive.read
+  archive.names # => ["data/henryIV.txt", "data/henryIV-westmoreland.txt"] 
+end
+```

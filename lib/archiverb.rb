@@ -29,7 +29,7 @@ class Archiverb
         r
       end
     else
-      @source = lambda { path_or_io.is_a?(IO) ? path_or_io : ::File.new(path_or_io, "a+").tap{|f| f.rewind } }
+      @source = lambda { path_or_io.is_a?(String) ? ::File.new(path_or_io, "a+").tap{|f| f.rewind } : path_or_io }
     end
     @out = path_or_io
     @files = {}
@@ -66,7 +66,7 @@ class Archiverb
   def read
     return self if @source.nil?
     io = @source.call
-    io.binmode
+    io.respond_to?(:binmode) && io.binmode
     preprocess(io)
     while (header = next_header(io))
       @files[header[:name]] = File.new(header[:name], read_file(header, io), Stat.new(header))
@@ -120,7 +120,7 @@ class Archiverb
     elsif path.is_a?(String)
       ::File.open(path, "w") { |io| write_to(io) }
     else
-      path.truncate
+      path.respond_to?(:truncate) && path.truncate
       write_to(path)
     end
     self
