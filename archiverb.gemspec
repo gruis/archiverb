@@ -5,14 +5,14 @@ require "rubygems"
   s.version                   = Archiverb::VERSION
   s.platform                  = ::Gem::Platform::RUBY
   s.authors                   = ['Caleb Crane']
-  s.email                     = ['ruby-archiver@simulacre.org']
+  s.email                     = ['archiverb@simulacre.org']
   s.homepage                  = "http://github.com/simulacre/archiverb"
   s.summary                   = 'Native Ruby implementations of tar and ar archives'
   s.description               = ''
   s.required_rubygems_version = ">= 1.3.6"
-  s.files                     = Dir["lib/**/*.rb", "bin/*", "*.md"]
+  s.files                     = Dir["lib/**/*.rb", "*.md", "LICENSE.txt"]
   s.require_paths             = ['lib']
-  s.executables               = Dir["bin/*"].map{|f| f.split("/")[-1] }
+  s.executables               = []
   s.license                   = 'MIT'
 
   # If you have C extensions, uncomment this line

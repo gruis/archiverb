@@ -1,6 +1,6 @@
-RubyArchiverb provides a Ruby bindings for creating
+Archiverb provides Ruby bindings for creating
 [tar](http://en.wikipedia.org/wiki/Tar_(computing) and
-[ar](http://en.wikipedia.org/wiki/Ar_(Unix)) archives in memory.
+[ar](http://en.wikipedia.org/wiki/Ar_(Unix) archives in memory.
 
 ## Install
 

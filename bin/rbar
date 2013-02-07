@@ -1,6 +1,0 @@
-#!/usr/bin/env ruby
-
-$: << File.expand_path("../../lib/", __FILE__)
-require "archiverb/ar"
-
-Archiverb::Ar.new(ARGV[0]).read
