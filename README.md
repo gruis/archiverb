@@ -30,7 +30,8 @@ archive.write
 archive  = Archiverb::Ar.new(File.expand_path("../henryIV.ar", __FILE__))
 archive.read 
 
-archive.files
+archive.names # => ["heneryIV.txt", "heneryIV-westmoreland.txt"] 
+archive.files # => [#<Archiverb::File:0x007f8d7b90acf8 @name="heneryIV.txt" ... >, ...]
 ```
 
 ## Adding files from memory 
@@ -49,17 +50,15 @@ archive.write
 
 
 ```ruby
-archive  = Archiverb::Tar.new(File.expand_path("../henryIV.ar", __FILE__))
+archive  = Archiverb::Tar.new(File.expand_path("../henryIV.tar", __FILE__))
 
-archive.add("data/", contents)
+archive.add("data/", :mode => 0744)
 
 contents = IO.read((File.expand_path("../spec/data/heneryIV.txt", __FILE__)))
 archive.add("data/henryIV.txt", contents)
 
-contents = IO.read((File.ebpand_path("../spec/data/heneryIV-westmoreland.txt", __FILE__)))
+contents = IO.read((File.expand_path("../spec/data/heneryIV-westmoreland.txt", __FILE__)))
 archive.add("data/henryIV-westmoreland.txt", contents)
 
 archive.write 
 ```
-
-## Using Archiverb with GZip
