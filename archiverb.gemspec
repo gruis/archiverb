@@ -7,7 +7,7 @@ require "rubygems"
   s.authors                   = ['Caleb Crane']
   s.email                     = ['ruby-archiver@simulacre.org']
   s.homepage                  = "http://github.com/simulacre/archiverb"
-  s.summary                   = 'Ruby implementations of various archivers'
+  s.summary                   = 'Native Ruby implementations of tar and ar archives'
   s.description               = ''
   s.required_rubygems_version = ">= 1.3.6"
   s.files                     = Dir["lib/**/*.rb", "bin/*", "*.md"]
