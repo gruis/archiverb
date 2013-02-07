@@ -1,7 +1,7 @@
-require 'archiver'
+require 'archiverb'
 
-class Archiver
-  class Ar < Archiver
+class Archiverb
+  class Ar < Archiverb
 
   private
 
@@ -57,4 +57,4 @@ class Archiver
     end
 
   end # class::Ar
-end # class::Archiver
+end # class::Archiverb

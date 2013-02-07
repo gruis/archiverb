@@ -1,12 +1,12 @@
-require 'archiver'
+require 'archiverb'
 require 'etc'
 
-class Archiver
+class Archiverb
   # GNU tar implementation
   # @see http://en.wikipedia.org/wiki/Tar_(file_format)
   # @see http://www.gnu.org/software/tar/manual/html_node/Standard.html
   # @see http://www.subspacefield.org/~vax/tar_format.html
-  class Tar < Archiver
+  class Tar < Archiverb
     TMAGIC       = 'ustar'
     TVERSION     = "00"
     OLDGNU_MAGIC = "ustar  \0"
@@ -204,5 +204,5 @@ class Archiver
       sprintf("%.6o\0 ", (header[0..147] + header[156..500]).each_byte.inject(256) { |s,b| s+b })
     end
 
-  end # class::Tar < Archiver
-end # class::Archiver
+  end # class::Tar < Archiverb
+end # class::Archiverb

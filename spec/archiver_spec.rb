@@ -1,10 +1,10 @@
 require File.expand_path("../spec_helper.rb", __FILE__)
 
-require "archiver/ar"
-require "archiver/tar"
+require "archiverb/ar"
+require "archiverb/tar"
 
 # @todo move all of these into shared behavior for implementing classes
-describe Archiver do
+describe Archiverb do
   describe "#new" do
     it "should support reading from the filesystem" do
       pending
@@ -59,7 +59,7 @@ describe Archiver do
   describe "#add" do
     let(:filepath) { ::File.expand_path("../data/heneryIV.txt", __FILE__) }
     let(:contents) { IO.read(::File.expand_path("../data/heneryIV.txt", __FILE__)) }
-    let(:archive) { Archiver::Ar.new }
+    let(:archive) { Archiverb::Ar.new }
 
     it "should support adding files from the file system" do
       archive[filepath].should be_nil

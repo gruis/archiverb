@@ -1,5 +1,5 @@
 require "ostruct"
-class Archiver
+class Archiverb
   class Stat < OpenStruct
     @@reqdatrs = [ :dev    , :dev_major , :dev_minor  , :ino        , :mode  , :nlink   ,
                    :gid    , :uid       , :rdev_major , :rdev_minor , :size  , :blksize ,
@@ -52,4 +52,4 @@ class Archiver
       end
     end # stat_hash(stat, syms
   end # class::Stat < Openstruct
-end # class::Archiver
+end # class::Archiverb

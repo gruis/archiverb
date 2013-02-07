@@ -1,12 +1,12 @@
 require File.expand_path("../spec_helper.rb", __FILE__)
 
-require "archiver/ar"
+require "archiverb/ar"
 
-describe Archiver::Ar do
-  include Archiver::Test
+describe Archiverb::Ar do
+  include Archiverb::Test
   it "should correctly unarchive text data" do
     ar = nil
-    ar = Archiver::Ar.new(::File.join(data_dir, 'txt.ar')).read
+    ar = Archiverb::Ar.new(::File.join(data_dir, 'txt.ar')).read
     ar.files.to_a.should_not be_empty
     ["heneryIV.txt", "heneryIV-westmoreland.txt"].each do |name|
       ar[name].should_not be_nil
@@ -15,7 +15,7 @@ describe Archiver::Ar do
   end # should correctly unarchive
 
   it "should correctly unarchive binary data" do
-    ar = Archiver::Ar.new(::File.join(data_dir, 'bin.ar')).read
+    ar = Archiverb::Ar.new(::File.join(data_dir, 'bin.ar')).read
     ar.files.to_a.should_not be_empty
     ar.files.map(&:name).should == ['batman.jpg', 'Tsuru Kage.jp']
     ar['batman.jpg'].should_not be_nil
@@ -25,7 +25,7 @@ describe Archiver::Ar do
   end # should correctly unarchive binary data
 
   it "should correctly ar text data" do
-    Archiver::Ar.new.tap do |archive|
+    Archiverb::Ar.new.tap do |archive|
       archive.add(::File.expand_path("../data/heneryIV-westmoreland.txt", __FILE__), :mtime => 1327073962)
       archive.add(::File.expand_path("../data/heneryIV.txt", __FILE__), :mtime => 1327110498)
       archive.count.should == 2
@@ -39,7 +39,7 @@ describe Archiver::Ar do
 
   it "should correctly ar binary data" do
     pending "the filename for Tsuru Kage.jp in the orignal is stored as an extended file name"
-    Archiver::Ar.new.tap do |archive|
+    Archiverb::Ar.new.tap do |archive|
       ['batman.jpg', 'Tsuru Kage.jp'].each do |file|
         archive.add(File.expand_path("../data/#{file}", __FILE__))
       end # file
@@ -54,10 +54,10 @@ describe Archiver::Ar do
 
   it "should correctly duplicate an ar file" do
     contents = IO.read(::File.join(data_dir, 'txt.ar'))
-    archive  = Archiver::Ar.new(::File.join(data_dir, 'txt.ar')).read
+    archive  = Archiverb::Ar.new(::File.join(data_dir, 'txt.ar')).read
     archive.write do |raw|
       raw.should == contents
     end # raw
   end # should correctly duplicate an ar file
 
-end # Archiver::Ar
+end # Archiverb::Ar

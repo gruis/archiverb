@@ -1,13 +1,13 @@
-require "archiver/stat"
-require "archiver/file"
+require "archiverb/stat"
+require "archiverb/file"
 
 # Provides a common interface for working with different types of
 # archive formats.
 #
 # @example
-#   arc = Archiver::Ar.new("junk.ar", "a.txt", "b.txt", "c.txt")
+#   arc = Archiverb::Ar.new("junk.ar", "a.txt", "b.txt", "c.txt")
 #   arc.write("/tmp/junk.ar")  # => creates /tmp/junk.ar with {a,b,c}.txt
-class Archiver
+class Archiverb
   module Error; end
   class StandarError < ::StandardError; include Error; end
   class ArgumentError < ::ArgumentError; include Error; end
@@ -20,7 +20,7 @@ class Archiver
   attr_accessor :prefix
 
   def initialize(path_or_io = nil, *files, &blk)
-    raise NotImplementedError if self.class == Archiver
+    raise NotImplementedError if self.class == Archiverb
     @opts = files.last.is_a?(Hash) ? files.pop : {}
     files.each { |file|  add(file) }
     if block_given?
@@ -155,4 +155,4 @@ private
   def read_file(header, io)
     raise AbstractMethod
   end
-end # class::Archiver
+end # class::Archiverb

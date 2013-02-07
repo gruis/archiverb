@@ -1,6 +1,6 @@
 require "stringio"
 
-class Archiver
+class Archiverb
   class File
     # the basename of the file
     attr_reader :name
@@ -21,7 +21,7 @@ class Archiver
 
     # the raw io object, you can add to it prior to calling read
     attr_reader :io
-    # [Archiver::Stat]
+    # [Archiverb::Stat]
     attr_reader :stat
 
     def initialize(name, io, buff=io, stat=nil, &blk)
@@ -73,4 +73,4 @@ class Archiver
     end # close
 
   end # class::File
-end # class::Archiver
+end # class::Archiverb
