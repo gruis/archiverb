@@ -63,13 +63,34 @@ class Archiverb
 
   # Pulls each file out of the archive and places them in #files.
   # @todo take a block and yield each file as it's read without storing it in #files
-  def read
+  def read filter = nil
     return self if @source.nil?
     io = @source.call
     io.respond_to?(:binmode) && io.binmode
     preprocess(io)
-    while (header = next_header(io))
-      @files[header[:name]] = File.new(header[:name], read_file(header, io), Stat.new(header))
+    case filter
+    when String
+      while (header = next_header(io))
+        if ::File.fnmatch(filter, header[:name])
+          @files[header[:name]] = File.new(header[:name], read_file(header, io), Stat.new(header))
+        else
+          skip_file(header, io)
+        end
+      end
+    when Regexp
+      while (header = next_header(io))
+        if filter.match(header[:name])
+          @files[header[:name]] = File.new(header[:name], read_file(header, io), Stat.new(header))
+        else
+          skip_file(header, io)
+        end
+      end
+    when nil
+      while (header = next_header(io))
+        @files[header[:name]] = File.new(header[:name], read_file(header, io), Stat.new(header))
+      end
+    else
+      raise ArgumentError.new("unsupported filter type: #{filter.class}")
     end
     io.close
     self
@@ -151,6 +172,12 @@ private
   # Abstract method
   # Given a file header and an IO that is the archive retrieve the file.
   def read_file(header, io)
+    raise AbstractMethod
+  end
+
+  # Abstract method
+  # Given a file header and an IO that is the archive skip the file.
+  def skip_file(header, io)
     raise AbstractMethod
   end
 end # class::Archiverb

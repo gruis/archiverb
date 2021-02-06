@@ -56,5 +56,9 @@ class Archiverb
       io.read(header[:size])
     end
 
+    def skip_file(header, io)
+      io.seek(header[:size], IO::SEEK_CUR)
+    end
+
   end # class::Ar
 end # class::Archiverb
