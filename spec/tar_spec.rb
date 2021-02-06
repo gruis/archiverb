@@ -74,7 +74,5 @@ describe Archiverb::Tar do
     end
   end
 
-  it "should correctly tar links" do
-    pending
-  end # should correctly tar links
+  it "should correctly tar links"
 end # Archiverb::Tar

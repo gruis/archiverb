@@ -6,54 +6,30 @@ require "archiverb/tar"
 # @todo move all of these into shared behavior for implementing classes
 describe Archiverb do
   describe "#new" do
-    it "should support reading from the filesystem" do
-      pending
-    end
-    it "should support reading from an open File" do
-      pending
-    end
-    it "should support reading from a pipe" do
-      pending
-    end
-    it "should support reading from a yielded pipe" do
-      pending
-    end
-    it "should support reading from a StringIO" do
-      pending
-    end
+    it "should support reading from the filesystem"
+    it "should support reading from an open File"
+    it "should support reading from a pipe"
+    it "should support reading from a yielded pipe"
+    it "should support reading from a StringIO"
 
     describe "when given a list of" do
       describe "files names" do
-        it "should create an archive of those files" do
-          pending
-        end
+        it "should create an archive of those files"
       end
       describe "Files" do
-        it "should create an archive of those Files" do
-          pending
-        end
+        it "should create an archive of those Files"
       end
       describe "Files and file names" do
-        it "should create an archive of those Files" do
-          pending
-        end
+        it "should create an archive of those Files"
       end
     end # when given a list of
   end # #new
 
   describe "#write" do
-    it "should support yielding contents to a block" do
-      pending
-    end
-    it "should support writing to a pipe" do
-      pending
-    end
-    it "should support writing to a File object" do
-      pending
-    end
-    it "should support writing to the file system" do
-      pending
-    end
+    it "should support yielding contents to a block"
+    it "should support writing to a pipe"
+    it "should support writing to a File object"
+    it "should support writing to the file system"
   end # #write
 
   describe "#add" do
