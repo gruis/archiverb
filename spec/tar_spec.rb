@@ -17,38 +17,59 @@ describe Archiverb::Tar do
     tar["data/henryIV.txt"].stat.readlink.should == "heneryIV.txt"
   end # should correctly unarchive text data
 
+  it "should correctly unarchive text data with limit" do
+    tar = Archiverb::Tar.new(::File.join(data_dir, 'txt.gnu.tar')).read(:limit => 1)
+    tar.files.size.should == 1
+    tar["data/heneryIV.txt"].should_not be_nil
+    tar["data/heneryIV.txt"].should untar_as("heneryIV.txt")
+  end
+
   it "should unarchive only files selected by glob" do
-    tar = Archiverb::Tar.new(::File.join(data_dir, 'txt.gnu.tar')).read("data/henery*")
+    tar = Archiverb::Tar.new(::File.join(data_dir, 'txt.gnu.tar')).read(:filter => "data/henery*")
     tar.files.size.should == 2
     tar["data/heneryIV.txt"].should_not be_nil
     tar["data/heneryIV.txt"].should untar_as("heneryIV.txt")
     tar["data/heneryIV-westmoreland.txt"].should_not be_nil
     tar["data/heneryIV-westmoreland.txt"].should untar_as("heneryIV-westmoreland.txt")
 
-    tar = Archiverb::Tar.new(::File.join(data_dir, 'txt.gnu.tar')).read("*westmore*")
+    tar = Archiverb::Tar.new(::File.join(data_dir, 'txt.gnu.tar')).read(:filter => "*westmore*")
     tar.files.size.should == 1
     tar["data/heneryIV-westmoreland.txt"].should_not be_nil
     tar["data/heneryIV-westmoreland.txt"].should untar_as("heneryIV-westmoreland.txt")
   end
 
+  it "should unarchive only files selected by glob with limit" do
+    tar = Archiverb::Tar.new(::File.join(data_dir, 'txt.gnu.tar')).read(:filter => "data/henery*", :limit => 1)
+    tar.files.size.should == 1
+    tar["data/heneryIV.txt"].should_not be_nil
+    tar["data/heneryIV.txt"].should untar_as("heneryIV.txt")
+  end
+
   it "should unarchive only files selected by regexp" do
-    tar = Archiverb::Tar.new(::File.join(data_dir, 'txt.gnu.tar')).read(%r|data/henery.*|)
+    tar = Archiverb::Tar.new(::File.join(data_dir, 'txt.gnu.tar')).read(:filter => %r|data/henery.*|)
     tar.files.size.should == 2
     tar["data/heneryIV.txt"].should_not be_nil
     tar["data/heneryIV.txt"].should untar_as("heneryIV.txt")
     tar["data/heneryIV-westmoreland.txt"].should_not be_nil
     tar["data/heneryIV-westmoreland.txt"].should untar_as("heneryIV-westmoreland.txt")
 
-    tar = Archiverb::Tar.new(::File.join(data_dir, 'txt.gnu.tar')).read(/westmore/)
+    tar = Archiverb::Tar.new(::File.join(data_dir, 'txt.gnu.tar')).read(:filter => /westmore/)
     tar.files.size.should == 1
     tar["data/heneryIV-westmoreland.txt"].should_not be_nil
     tar["data/heneryIV-westmoreland.txt"].should untar_as("heneryIV-westmoreland.txt")
+  end
+
+  it "should unarchive only files selected by regexp with limit" do
+    tar = Archiverb::Tar.new(::File.join(data_dir, 'txt.gnu.tar')).read(:filter => %r|data/henery.*|, :limit => 1)
+    tar.files.size.should == 1
+    tar["data/heneryIV.txt"].should_not be_nil
+    tar["data/heneryIV.txt"].should untar_as("heneryIV.txt")
   end
 
   it "should raise error on unsupported filter" do
     filter = 123
     lambda {
-      Archiverb::Tar.new(::File.join(data_dir, 'txt.gnu.tar')).read(filter)
+      Archiverb::Tar.new(::File.join(data_dir, 'txt.gnu.tar')).read(:filter => filter)
     }.should raise_error(ArgumentError, "unsupported filter type: #{filter.class}")
   end
 

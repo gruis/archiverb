@@ -63,16 +63,17 @@ class Archiverb
 
   # Pulls each file out of the archive and places them in #files.
   # @todo take a block and yield each file as it's read without storing it in #files
-  def read filter = nil
+  def read params = {}
     return self if @source.nil?
     io = @source.call
     io.respond_to?(:binmode) && io.binmode
     preprocess(io)
-    case filter
+    case filter = params[:filter]
     when String
       while (header = next_header(io))
         if ::File.fnmatch(filter, header[:name])
           @files[header[:name]] = File.new(header[:name], read_file(header, io), Stat.new(header))
+          break if params[:limit] && @files.size >= params[:limit]
         else
           skip_file(header, io)
         end
@@ -81,6 +82,7 @@ class Archiverb
       while (header = next_header(io))
         if filter.match(header[:name])
           @files[header[:name]] = File.new(header[:name], read_file(header, io), Stat.new(header))
+          break if params[:limit] && @files.size >= params[:limit]
         else
           skip_file(header, io)
         end
@@ -88,6 +90,7 @@ class Archiverb
     when nil
       while (header = next_header(io))
         @files[header[:name]] = File.new(header[:name], read_file(header, io), Stat.new(header))
+        break if params[:limit] && @files.size >= params[:limit]
       end
     else
       raise ArgumentError.new("unsupported filter type: #{filter.class}")

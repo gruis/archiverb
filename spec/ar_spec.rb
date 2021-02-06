@@ -16,20 +16,36 @@ describe Archiverb::Ar do
 
   it "should correctly unarchive text data with glob filter" do
     ["heneryIV.txt", "heneryIV-westmoreland.txt"].each do |name|
-      ar = Archiverb::Ar.new(::File.join(data_dir, 'txt.ar')).read(name.sub(/txt$/,"*"))
+      ar = Archiverb::Ar.new(::File.join(data_dir, 'txt.ar')).read(:filter => name.sub(/txt$/,"*"))
       ar.files.size.should == 1
       ar[name].should_not be_nil
       ar[name].should unar_as(name)
     end
   end
 
+  it "should correctly unarchive text data with glob filter and limit" do
+    name = "heneryIV-westmoreland.txt"
+    ar = Archiverb::Ar.new(::File.join(data_dir, 'txt.ar')).read(:filter => "*.txt", :limit => 1)
+    ar.files.size.should == 1
+    ar[name].should_not be_nil
+    ar[name].should unar_as(name)
+  end
+
   it "should correctly unarchive text data with regexp filter" do
     ["heneryIV.txt", "heneryIV-westmoreland.txt"].each do |name|
-      ar = Archiverb::Ar.new(::File.join(data_dir, 'txt.ar')).read(Regexp.new(name.sub(/txt$/,"[tx]+")))
+      ar = Archiverb::Ar.new(::File.join(data_dir, 'txt.ar')).read(:filter => Regexp.new(name.sub(/txt$/,"[tx]+")))
       ar.files.size.should == 1
       ar[name].should_not be_nil
       ar[name].should unar_as(name)
     end
+  end
+
+  it "should correctly unarchive text data with regexp filter and limit" do
+    name = "heneryIV-westmoreland.txt"
+    ar = Archiverb::Ar.new(::File.join(data_dir, 'txt.ar')).read(:filter => /\.txt$/, :limit => 1)
+    ar.files.size.should == 1
+    ar[name].should_not be_nil
+    ar[name].should unar_as(name)
   end
 
   it "should correctly unarchive binary data" do
@@ -44,30 +60,46 @@ describe Archiverb::Ar do
 
   it "should correctly unarchive binary data with glob filter" do
     ["batman.jpg", "Tsuru Kage.jp"].each do |name|
-      ar = Archiverb::Ar.new(::File.join(data_dir, 'bin.ar')).read(name.sub(/jpg?$/,"*"))
+      ar = Archiverb::Ar.new(::File.join(data_dir, 'bin.ar')).read(:filter => name.sub(/jpg?$/,"*"))
       ar.files.size.should == 1
       ar[name].should_not be_nil
       ar[name].should unar_as(name)
     end
-    ar = Archiverb::Ar.new(::File.join(data_dir, 'bin.ar')).read("foo")
+    ar = Archiverb::Ar.new(::File.join(data_dir, 'bin.ar')).read(:filter => "foo")
     ar.files.size.should == 0
+  end
+
+  it "should correctly unarchive binary data with glob filter and limit" do
+    name = "batman.jpg"
+    ar = Archiverb::Ar.new(::File.join(data_dir, 'bin.ar')).read(:filter => "*.jp*", :limit => 1)
+    ar.files.size.should == 1
+    ar[name].should_not be_nil
+    ar[name].should unar_as(name)
   end
 
   it "should correctly unarchive binary data with regexp filter" do
     ["batman.jpg", "Tsuru Kage.jp"].each do |name|
-      ar = Archiverb::Ar.new(::File.join(data_dir, 'bin.ar')).read(Regexp.new(name.sub(/jpg?$/,"+")))
+      ar = Archiverb::Ar.new(::File.join(data_dir, 'bin.ar')).read(:filter => Regexp.new(name.sub(/jpg?$/,"+")))
       ar.files.size.should == 1
       ar[name].should_not be_nil
       ar[name].should unar_as(name)
     end
-    ar = Archiverb::Ar.new(::File.join(data_dir, 'bin.ar')).read(/foo/)
+    ar = Archiverb::Ar.new(::File.join(data_dir, 'bin.ar')).read(:filter => /foo/)
     ar.files.size.should == 0
+  end
+
+  it "should correctly unarchive binary data with regexp filter and limit" do
+    name = "batman.jpg"
+    ar = Archiverb::Ar.new(::File.join(data_dir, 'bin.ar')).read(:filter => /\.jp/, :limit => 1)
+    ar.files.size.should == 1
+    ar[name].should_not be_nil
+    ar[name].should unar_as(name)
   end
 
   it "should raise error on unsupported filter" do
     filter = 123
     lambda {
-      Archiverb::Ar.new(::File.join(data_dir, 'bin.ar')).read(filter)
+      Archiverb::Ar.new(::File.join(data_dir, 'bin.ar')).read(:filter => filter)
     }.should raise_error(ArgumentError, "unsupported filter type: #{filter.class}")
   end
 
