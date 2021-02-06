@@ -29,11 +29,11 @@ RSpec::Matchers.define :unar_as do |original|
     !unared.nil? && !unared.read.nil? && Digest::MD5.hexdigest(unared.read) == Archiverb::Test.md5s[original]
   end # unared
 
-  failure_message_for_should do |unared|
+  failure_message_when_negated do |unared|
     "expected #{unared.name} (#{Digest::MD5.hexdigest(unared.read)}) to be the same as the #{original} (#{Archiverb::Test.md5s[original]})."
   end # unared
 
-  failure_message_for_should_not do |unared|
+  failure_message_when_negated do |unared|
     "expected #{unared.name} (#{Digest::MD5.hexdigest(unared.read)}) to be the different from #{original} (#{Archiverb::Test.md5s[original]})."
   end # unared
 end # original
@@ -43,11 +43,11 @@ RSpec::Matchers.define :untar_as do |original|
     !untared.nil? && !untared.read.nil? && Digest::MD5.hexdigest(untared.read) == Archiverb::Test.md5s[original]
   end # unared
 
-  failure_message_for_should do |untared|
+  failure_message do |untared|
     "expected #{untared.name} (#{Digest::MD5.hexdigest(untared.read)}) to be the same as the #{original} (#{Archiverb::Test.md5s[original]})."
   end # unared
 
-  failure_message_for_should_not do |untared|
+  failure_message_when_negated do |untared|
     "expected #{untared.name} (#{Digest::MD5.hexdigest(untared.read)}) to be the different from #{original} (#{Archiverb::Test.md5s[original]})."
   end # unared
 end # original
