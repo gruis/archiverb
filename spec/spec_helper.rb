@@ -20,6 +20,10 @@ class Archiverb
   end # module::Test
 end # class::Archiverb
 
+RSpec.configure do |config|
+  config.expect_with(:rspec) { |c| c.syntax = :should }
+end
+
 RSpec::Matchers.define :unar_as do |original|
   match do |unared|
     !unared.nil? && !unared.read.nil? && Digest::MD5.hexdigest(unared.read) == Archiverb::Test.md5s[original]
