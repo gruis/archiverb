@@ -177,12 +177,23 @@ class Archiverb
         'regular'
       end
     end # stat_type(bit)
+
     def read_file(header, io)
       io.read(header[:size]).tap do |raw|
         if (diff = header[:size] % 512) != 0
           io.read(512 - diff)
         end
       end # raw
+    end
+
+    def skip_file(header, io)
+      remainder = header[:size] % 512
+      if remainder == 0
+        io.seek(header[:size], IO::SEEK_CUR)
+      else
+        # length is rounded up to a multiple of 512 bytes.
+        io.seek(header[:size]+512-remainder, IO::SEEK_CUR)
+      end
     end
 
     def pull_ustar(raw)
