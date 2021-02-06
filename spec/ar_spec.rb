@@ -26,13 +26,14 @@ describe Archiverb::Ar do
 
   it "should correctly ar text data" do
     Archiverb::Ar.new.tap do |archive|
-      archive.add(::File.expand_path("../data/heneryIV-westmoreland.txt", __FILE__), :mtime => 1327073962)
-      archive.add(::File.expand_path("../data/heneryIV.txt", __FILE__), :mtime => 1327110498)
+      stat = { :mtime => 1360125720, :mode => 0755, :uid => 1000, :gid => 1000 }
+      archive.add(::File.expand_path("../data/heneryIV-westmoreland.txt", __FILE__), stat)
+      archive.add(::File.expand_path("../data/heneryIV.txt", __FILE__), stat)
       archive.count.should == 2
       archive.files.should_not be_empty
       archive.files.map(&:name).should == ['heneryIV-westmoreland.txt', 'heneryIV.txt']
       archive.write do |raw|
-        Digest::MD5.hexdigest(raw).should == "428500d94224b52844b0499af60da8d4"
+        Digest::MD5.hexdigest(raw).should == "0757551d8fd89c9e6df6f4f229c33977"
       end # raw
     end # archive
   end # should correctly ar text data
